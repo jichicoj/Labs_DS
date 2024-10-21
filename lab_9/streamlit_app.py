@@ -19,9 +19,11 @@ from sklearn.metrics import classification_report, confusion_matrix, ConfusionMa
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import roc_curve, auc
 import numpy as np
+import os
 
 # Download NLTK resources
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 
 # Set page background color to black
@@ -40,8 +42,15 @@ st.markdown(
 palette = sns.color_palette("PRGn", 8)
 
 # Load the dataset
-file_path = "./data/train.csv"  # Modify as needed for your file path
-data = pd.read_csv(file_path)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+file_path = os.path.join(current_dir, 'data', 'train.csv')
+
+# Check if file exists
+if os.path.exists(file_path):
+    data = pd.read_csv(file_path)
+    st.write(data.head())
+else:
+    st.error(f"File not found: {file_path}")
 
 # Data Cleaning Function
 STOP_WORDS = set(stopwords.words('english'))
