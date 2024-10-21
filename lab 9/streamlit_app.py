@@ -16,6 +16,8 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import roc_curve, auc
 import numpy as np
 
 # Download NLTK resources
@@ -38,12 +40,13 @@ st.markdown(
 palette = sns.color_palette("PRGn", 8)
 
 # Load the dataset
-file_path = "data/train.csv"  # Modify as needed for your file path
+file_path = "./data/train.csv"  # Modify as needed for your file path
 data = pd.read_csv(file_path)
 
 # Data Cleaning Function
 STOP_WORDS = set(stopwords.words('english'))
 BANNED_WORDS = ['im', 'one', 'u', 'rt']
+
 
 def limpiar_texto(texto: str) -> str:
     if not texto:
@@ -56,6 +59,7 @@ def limpiar_texto(texto: str) -> str:
     texto = texto.translate(str.maketrans('', '', string.punctuation))
     tokens = [word for word in word_tokenize(texto) if ((word not in STOP_WORDS) and (word not in BANNED_WORDS))]
     return ' '.join(tokens)
+
 
 data['clean_text'] = data['text'].apply(limpiar_texto)
 
@@ -147,7 +151,6 @@ st.header("Random Forest Model")
 st.subheader("Model Results")
 
 # Vectorization using TF-IDF
-from sklearn.feature_extraction.text import TfidfVectorizer
 vectorizer = TfidfVectorizer(max_features=5000)
 X_rf = vectorizer.fit_transform(data['clean_text']).toarray()
 y = data['target'].values
@@ -175,9 +178,11 @@ st.pyplot(fig)
 st.header("Sentiment Analysis")
 analyzer = SentimentIntensityAnalyzer()
 
+
 def get_vader_sentiment(text):
     sentiment_scores = analyzer.polarity_scores(text)
     return sentiment_scores['neg'], sentiment_scores['neu'], sentiment_scores['pos'], sentiment_scores['compound']
+
 
 data[['neg_sentiment', 'neu_sentiment', 'pos_sentiment', 'compound_sentiment']] = data['clean_text'].apply(
     lambda x: pd.Series(get_vader_sentiment(x))
@@ -237,8 +242,6 @@ st.pyplot(fig)
 
 
 # Additional Visualization: ROC Curve
-from sklearn.metrics import roc_curve, auc
-
 st.subheader("ROC Curve")
 
 # Get the probabilities of the model for the positive class (disaster tweets)
