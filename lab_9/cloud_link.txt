@@ -1,0 +1,3 @@
+Utilizar este link para consultar el dashboard desde la nube
+
+https://lab9st.streamlit.app/
